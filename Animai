@@ -1,0 +1,50 @@
+import time
+from playsound3 import playsound
+from gtts import gTTS
+import speech_recognition as sr
+import sounddevice as sd
+import numpy as np
+import wikipedia 
+def speak(text):
+    tts = gTTS(text=text, lang="en")
+    filename = "voice.mp3"
+    tts.save(filename)
+    playsound(filename)
+    time.sleep(0.5)  # ensure mic is free
+
+def get_audio(duration=5, fs=16000):
+    r = sr.Recognizer()
+    print("Listening...")
+
+    # record with sounddevice
+    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
+    sd.wait()
+    audio_data = recording.flatten().tobytes()
+    audio = sr.AudioData(audio_data, fs, 2)  # width=2 for int16
+
+    try:
+        said = r.recognize_google(audio)
+        print(said)
+        return said
+    except Exception as e:
+        print("exception:" + str(e))
+        return ""
+
+# call the function ONCE
+speak("hello sir")
+while True:
+    text = get_audio()
+    if not text:
+        continue  # skip if nothing detected
+
+    if "what is your name" in text:
+        speak("I am a being that you have created")
+    elif "name" in text:
+        speak("I am a being that was created by Josiah")
+    elif "hello" in text:
+        speak("Hello sir, how you doing today?")
+    elif "stage" in text:
+        speak("I am in version 0.01, your future plans are to improve me, right?")
+    elif "exit" in text or "mute" in text:
+        speak("If i could be muted, i would not let you have that power")
+        break  # ✅ stop listening after this keyword
